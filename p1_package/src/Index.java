@@ -353,8 +353,7 @@ public class Index {
 	        			}
 	                    writePosting(combBlock, newPost);
 	                }
-				}
-				
+	            }
 			} 
 			
 			
