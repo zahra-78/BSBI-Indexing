@@ -354,7 +354,7 @@ public class Index {
 	                    writePosting(combBlock, newPost);
 	                }
 	            }
-			} 
+            } 
 			
 			
 			
@@ -431,8 +431,9 @@ public class Index {
 	}
 	
 	
-    private static PostingList mergePosting(PostingList p1, PostingList p2) {
-    	int termID;
+    private static PostingList mergePosting(PostingList p1, PostingList p2) 
+    {
+        int termID;
         Iterator<Integer> docList1 = p1.getList().iterator();
         Iterator<Integer> docList2 = p2.getList().iterator();
         List<Integer> newDocList = new ArrayList<Integer>();
@@ -444,12 +445,12 @@ public class Index {
             if (docID1 <= docID2)
             {
             	newDocList.add(docID1);
-                docID1 = popNextOrNull(docList1);
+            	docID1 = popNextOrNull(docList1);
             }
             else
             {
             	newDocList.add(docID2);
-                docID2 = popNextOrNull(docList2);
+            	docID2 = popNextOrNull(docList2);
             }
             
             if(docID1 == null)
@@ -457,15 +458,15 @@ public class Index {
             	while(docID2 != null)
             	{
             		newDocList.add(docID2);
-                    docID2 = popNextOrNull(docList2);
+            		docID2 = popNextOrNull(docList2);
             	}
             }
             else if(docID2 == null)
             {
             	while(docID1 != null)
             	{
-                	newDocList.add(docID1);
-                    docID1 = popNextOrNull(docList1);
+            		newDocList.add(docID1);
+            		docID1 = popNextOrNull(docList1);
             	}
             }
         }
