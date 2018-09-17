@@ -17,6 +17,7 @@ public class BasicIndex implements BaseIndex {
 		 */
 		ByteBuffer buf;
 		int termID, docFreq, docID;
+		List<Integer> eachPostList = new ArrayList<Integer>();;
 		buf = ByteBuffer.allocate(4);		// Integer are 32 bits and Byte are 8 bits so 32/8 = 4
 		try {
 			if(fc.read(buf) <= 0)
@@ -38,7 +39,6 @@ public class BasicIndex implements BaseIndex {
 		buf.flip();
 		docFreq = buf.getInt();
 		
-		List<Integer> eachPostList = new ArrayList<Integer>(docFreq);
 		for(int i = 0 ; i < docFreq ; i++)
 		{
 			buf = ByteBuffer.allocate(4);
@@ -53,7 +53,7 @@ public class BasicIndex implements BaseIndex {
 		}
 		
 		PostingList postList = new PostingList(termID,eachPostList);
-		System.out.println(termID+" "+docFreq+" "+eachPostList.toString());
+		//System.out.println(termID+" "+docFreq+" "+eachPostList.toString());
 		return postList;
 	}
 

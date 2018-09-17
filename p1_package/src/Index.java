@@ -298,46 +298,60 @@ public class Index {
 			{
 				PostingList post1 = index.readPosting(block1);
 				PostingList post2 = index.readPosting(block2);
-            	PostingList p = null;
+            	PostingList newPost = null;
 				if(post1 == null && post2 == null)
 				{
 					break;
 				}
 				else
 				{
-					while (post1 != null && (post2 == null || post1.getTermId() < post2.getTermId())) 
+					while (post1 != null) 
 					{
-	        			if(blockQueue.isEmpty())
-	        			{
-	        				pairDoc = new Pair<>(combBlock.position(), post1.getList().size());
-	        				postingDict.put(post1.getTermId(),pairDoc);
-	        			}
-	                    writePosting(combBlock, post1);
-	                    System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString() + " into " + combfile.getName());
-	                    post1 = index.readPosting(block1);
+						if(post2 == null || post1.getTermId() < post2.getTermId())
+						{
+		        			if(blockQueue.size() <= 0)
+		        			{
+		        				pairDoc = new Pair<>(combBlock.position(), post1.getList().size());
+		        				postingDict.put(post1.getTermId(),pairDoc);
+		        			}
+		                    writePosting(combBlock, post1);
+		                    //System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString() + " into " + combfile.getName());
+		                    post1 = index.readPosting(block1);
+						}
+						else
+						{
+							break;
+						}
 	                } 
-	                while (post2 != null && (post1 == null || post2.getTermId() < post1.getTermId())) 
+	                while (post2 != null) 
 	                {
-	        			if(blockQueue.isEmpty())
-	        			{
-	        				pairDoc = new Pair<>(combBlock.position(), post2.getList().size());
-	        				postingDict.put(post2.getTermId(),pairDoc);
-	        			}
-	                    writePosting(combBlock, post2);
-	                    System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString() + " into " + combfile.getName());
-	                    post2 = index.readPosting(block2);
+	                	if(post1 == null || post2.getTermId() < post1.getTermId())
+	                	{
+		        			if(blockQueue.size() <= 0)
+		        			{
+		        				pairDoc = new Pair<>(combBlock.position(), post2.getList().size());
+		        				postingDict.put(post2.getTermId(),pairDoc);
+		        			}
+		                    writePosting(combBlock, post2);
+		                    //System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString() + " into " + combfile.getName());
+		                    post2 = index.readPosting(block2);
+	                	}
+	                	else
+	                	{
+	                		break;
+	                	}
 	                }
 	                if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
 	                {
-	                	System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
-	                    p = mergePosting(post1, post2);
-	                    System.out.println("Write " + p.getTermId() + " " + p.getList().size() + " " + p.getList().toString() + " into " + combfile.getName());
-	        			if(blockQueue.isEmpty())
+	                	//System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
+	                    newPost = mergePosting(post1, post2);
+	                    //System.out.println("Write " + p.getTermId() + " " + p.getList().size() + " " + p.getList().toString() + " into " + combfile.getName());
+	        			if(blockQueue.size() <= 0)
 	        			{
-	        				pairDoc = new Pair<>(combBlock.position(), p.getList().size());
-	        				postingDict.put(p.getTermId(),pairDoc);
+	        				pairDoc = new Pair<>(combBlock.position(), newPost.getList().size());
+	        				postingDict.put(newPost.getTermId(),pairDoc);
 	        			}
-	                    writePosting(combBlock, p);
+	                    writePosting(combBlock, newPost);
 	                }
 				}
 				
@@ -384,7 +398,7 @@ public class Index {
 	}
 	
 	/**
-	 * Add
+	 * Delete files and sub-folders
 	 * @param file
 	 * @throws IOException
 	 */
@@ -419,7 +433,6 @@ public class Index {
 	
 	
     private static PostingList mergePosting(PostingList p1, PostingList p2) {
-        //Build new posting list
     	int termID;
         Iterator<Integer> docList1 = p1.getList().iterator();
         Iterator<Integer> docList2 = p2.getList().iterator();
@@ -427,7 +440,7 @@ public class Index {
         Integer docID1 = popNextOrNull(docList1);
         Integer docID2 = popNextOrNull(docList2);
         
-        while (docID1 != null && docID2 != null) 
+        while (docID1 != null || docID2 != null) 
         {
             if (docID1 <= docID2)
             {
@@ -444,7 +457,7 @@ public class Index {
             {
             	while(docID2 != null)
             	{
-                	newDocList.add(docID2);
+            		newDocList.add(docID2);
                     docID2 = popNextOrNull(docList2);
             	}
             }
