@@ -288,82 +288,14 @@ public class Index {
 			 *       
 			 */
 			System.out.println("Merge Block ("+b1.getName() + ", " + b2.getName() + ")");
-			FileChannel block1 = bf1.getChannel();
-			FileChannel block2 = bf2.getChannel();
-			FileChannel combBlock = mf.getChannel();
 			
-			Pair<Long,Integer> pairDoc;
-			
-			while(true)
-			{
-				PostingList post1 = index.readPosting(block1);
-				PostingList post2 = index.readPosting(block2);
-            	PostingList newPost = null;
-				if(post1 == null && post2 == null)
-				{
-					break;
-				}
-				else
-				{
-					while (post1 != null) 
-					{
-						if(post2 == null || post1.getTermId() < post2.getTermId())
-						{
-		        			if(blockQueue.size() <= 0)
-		        			{
-		        				pairDoc = new Pair<>(combBlock.position(), post1.getList().size());
-		        				postingDict.put(post1.getTermId(),pairDoc);
-		        			}
-		                    writePosting(combBlock, post1);
-		                    //System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString() + " into " + combfile.getName());
-		                    post1 = index.readPosting(block1);
-						}
-						else
-						{
-							break;
-						}
-	                } 
-	                while (post2 != null) 
-	                {
-	                	if(post1 == null || post2.getTermId() < post1.getTermId())
-	                	{
-		        			if(blockQueue.size() <= 0)
-		        			{
-		        				pairDoc = new Pair<>(combBlock.position(), post2.getList().size());
-		        				postingDict.put(post2.getTermId(),pairDoc);
-		        			}
-		                    writePosting(combBlock, post2);
-		                    //System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString() + " into " + combfile.getName());
-		                    post2 = index.readPosting(block2);
-	                	}
-	                	else
-	                	{
-	                		break;
-	                	}
-	                }
-	                if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
-	                {
-	                	//System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
-	                    newPost = mergePosting(post1, post2);
-	                    //System.out.println("Write " + p.getTermId() + " " + p.getList().size() + " " + p.getList().toString() + " into " + combfile.getName());
-	        			if(blockQueue.size() <= 0)
-	        			{
-	        				pairDoc = new Pair<>(combBlock.position(), newPost.getList().size());
-	        				postingDict.put(newPost.getTermId(),pairDoc);
-	        			}
-	                    writePosting(combBlock, newPost);
-	                }
-	            }
-            } 
-			
-			
-			
+			mergeBlock( bf1,  bf2,  mf);
 			
 			bf1.close();
 			bf2.close();
 			mf.close();
-			//b1.delete();
-			//b2.delete();
+			b1.delete();
+			b2.delete();
 			blockQueue.add(combfile);
 		}
 
@@ -431,6 +363,80 @@ public class Index {
 	}
 	
 	
+	private static void mergeBlock(RandomAccessFile f1, RandomAccessFile f2, RandomAccessFile combFile) throws IOException
+	{
+		FileChannel block1 = f1.getChannel();
+		FileChannel block2 = f2.getChannel();
+		FileChannel combBlock = combFile.getChannel();
+		
+		while(true)
+		{
+			PostingList post1 = index.readPosting(block1);
+			PostingList post2 = index.readPosting(block2);
+        	PostingList newPost = null;
+			if(post1 == null && post2 == null)
+			{
+				break;
+			}
+			else
+			{
+				while (post1 != null) 
+				{
+					if(post2 == null || post1.getTermId() < post2.getTermId())
+					{
+	        			if(blockQueue.size() <= 0)
+	        			{
+	        				writePostDict(post1.getTermId(), combBlock.position(), post1.getList().size());
+	        			}
+	                    writePosting(combBlock, post1);
+	                    System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString());
+	                    post1 = index.readPosting(block1);
+					}
+					else
+					{
+						break;
+					}
+                } 
+                while (post2 != null) 
+                {
+                	if(post1 == null || post2.getTermId() < post1.getTermId())
+                	{
+	        			if(blockQueue.size() <= 0)
+	        			{
+	        				writePostDict(post2.getTermId(), combBlock.position(), post2.getList().size());
+	        			}
+	                    writePosting(combBlock, post2);
+	                    System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString());
+	                    post2 = index.readPosting(block2);
+                	}
+                	else
+                	{
+                		break;
+                	}
+                }
+                if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
+                {
+                	System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
+                    newPost = mergePosting(post1, post2);
+                    System.out.println("Write " + newPost.getTermId() + " " + newPost.getList().size() + " " + newPost.getList().toString());
+        			if(blockQueue.size() <= 0)
+        			{
+        				writePostDict(newPost.getTermId(), combBlock.position(), newPost.getList().size());
+        			}
+                    writePosting(combBlock, newPost);
+                }
+            }
+        } 
+	}
+	
+    
+    private static void writePostDict(int termId, long pos, int docFreq)
+    {
+		Pair<Long,Integer> pairDoc;
+		pairDoc = new Pair<>(pos, docFreq);
+		postingDict.put(termId,pairDoc);
+    }
+	
     private static PostingList mergePosting(PostingList p1, PostingList p2) 
     {
         int termID;
@@ -475,7 +481,8 @@ public class Index {
     	termID = p1.getTermId();
         PostingList newPostList = new PostingList(termID,newDocList);
         return newPostList;
-}
+    }
+    
 
 	public static void main(String[] args) throws IOException {
 		/* Parse command line */

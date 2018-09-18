@@ -1,5 +1,3 @@
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -43,7 +41,16 @@ public class Query {
 		/*
 		 * TODO: Your code here
 		 */
-		return null;
+		PostingList posList;
+		if(posDict.containsKey(termId))
+		{
+			posList = index.readPosting(fc.position(posDict.get(termId)));
+			return posList;
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
 	
@@ -104,11 +111,11 @@ public class Query {
 	}
     
 	public List<Integer> retrieve(String query) throws IOException
-	{	if(!running) 
+	{	
+		if(!running) 
 		{
 			System.err.println("Error: Query service must be initiated");
 		}
-		
 		/*
 		 * TODO: Your code here
 		 *       Perform query processing with the inverted index.
