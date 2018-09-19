@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
 import java.util.TreeMap;
 
 public class Query {
@@ -122,7 +124,76 @@ public class Query {
 		 *       return the list of IDs of the documents that match the query
 		 *      
 		 */
-		return null;
+		FileChannel g;
+		g = indexFile.getChannel();
+		List<PostingList> pos = new ArrayList<PostingList>();
+		List<Integer> listDocID = new LinkedList<Integer>();
+		int check = 0;
+		if(query.contains(" "))
+		{
+			String newTerm[];
+			newTerm = query.split(" ");
+			
+			for(int i = 0 ; i < newTerm.length ; i++)
+			{
+				//System.out.println(newTerm[i]);
+				for(String term : termDict.keySet()) 
+				{
+					//System.out.println("here");
+					  if(newTerm[i].equals(term))
+					  {
+						  //System.out.println("here in if");
+						  PostingList p = readPosting(g,termDict.get(term));
+						  //System.out.println(p.getTermId());
+						  pos.add(p);
+						  check++;
+					  }
+				}
+			}
+			if(check != newTerm.length)
+			{
+				return null;
+			}
+				
+			while(pos.size() > 1)
+			{
+				int i = 0;
+				//System.out.println("yey");
+				PostingList newPos = intersect(pos.get(i),pos.get(i+1));
+				pos.add(newPos);
+				pos.remove(i);
+				pos.remove(i+1);
+			}
+			for(int i = 0; i<pos.get(0).getList().size() ; i++)
+			{
+				//System.out.println(pos.get(0).getList().get(i));
+				listDocID.add(pos.get(0).getList().get(i));
+				
+			}
+		}
+		else
+		{
+			for(String term : termDict.keySet())
+			{
+//				System.out.println(term + " " + query);
+				if(query.equals(term))
+				{
+					PostingList p = readPosting(g,termDict.get(term));
+					for(int i = 0 ; i < p.getList().size() ; i++)
+					{
+						//System.out.println(p.getList().get(i));
+						listDocID.add(p.getList().get(i));
+						check = 1;
+					}
+				}
+			}
+		}
+		if(check == 0)
+		{
+			return null;
+		}
+		
+		return listDocID;
 		
 	}
 	
@@ -144,8 +215,85 @@ public class Query {
 		 * no results found
 		 * 
          * */
-    	
-    	return null;
+    	String result = "";
+    	if(res != null) 
+    	{
+        	String[] output = new String[res.size()];
+    		for(int i = 0 ; i < res.size() ; i++)
+    		{
+    			for(int id : docDict.keySet())
+    			{
+    				//System.out.println(res.get(i));
+    				if(res.get(i).equals(id))
+    				{
+    					if(i == res.size()-1)
+    					{
+        					output[i] = docDict.get(id);
+    					}
+    					else
+    					{
+        					output[i] = docDict.get(id)+"\n";
+    					}
+    				}
+    			}
+    		}
+        	for(int i = 0 ; i<output.length-1 ; i++)
+        	{
+        		for(int j = 0 ; j< output.length-i-1 ; j++)
+        		{
+        			if(output[j].compareTo(output[j+1]) > 0)
+        			{
+        				String temp = output[j];
+        				output[j] = output[j+1];
+        				output[j+1] = temp;
+        			}
+        		}
+        	}
+        	for(int i = 0 ; i < output.length ; i++)
+        	{
+        		//System.out.println(output[i]);
+        		result += output[i];
+        	}
+        	return result;
+    	}
+    	else
+    	{
+        	return new String("no results found");
+    	}
+    }
+    
+    private PostingList intersect(PostingList p1, PostingList p2)
+    {
+    	PostingList newP;
+    	ArrayList<Integer> docList = new ArrayList<Integer>();
+    	int i = 0;
+    	int j = 0;
+    	//System.out.println("p1 size : "+p1.getList().size()+" p2 size : "+p2.getList().size());
+    	while(i<p1.getList().size() || j<p2.getList().size())
+    	{
+    		if(p1.getList().get(i) == p2.getList().get(j))
+    		{
+    			//System.out.println("write "+p1.getList().get(i));
+    			docList.add(p1.getList().get(i));
+    			i++;
+    			j++;
+    			//System.out.println("i, j"+i+j);
+    		}
+    		else
+    		{
+    			//System.out.println("here");
+    			if(p1.getList().get(i) > p2.getList().get(j))
+    			{
+    				j++;
+    			}
+    			else if(p1.getList().get(i) < p2.getList().get(j))
+    			{
+    				i++;
+    			}
+    		}
+    	}
+    	newP = new PostingList(p1.getTermId(),docList);
+    	return newP;
     }
 	
 	public static void main(String[] args) throws IOException {

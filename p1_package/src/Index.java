@@ -389,7 +389,7 @@ public class Index {
 	        				writePostDict(post1.getTermId(), combBlock.position(), post1.getList().size());
 	        			}
 	                    writePosting(combBlock, post1);
-	                    System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString());
+	                    //System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString());
 	                    post1 = index.readPosting(block1);
 					}
 					else
@@ -406,7 +406,7 @@ public class Index {
 	        				writePostDict(post2.getTermId(), combBlock.position(), post2.getList().size());
 	        			}
 	                    writePosting(combBlock, post2);
-	                    System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString());
+	                   //System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString());
 	                    post2 = index.readPosting(block2);
                 	}
                 	else
@@ -416,9 +416,9 @@ public class Index {
                 }
                 if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
                 {
-                	System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
+                	//System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
                     newPost = mergePosting(post1, post2);
-                    System.out.println("Write " + newPost.getTermId() + " " + newPost.getList().size() + " " + newPost.getList().toString());
+                    //System.out.println("Write " + newPost.getTermId() + " " + newPost.getList().size() + " " + newPost.getList().toString());
         			if(blockQueue.size() <= 0)
         			{
         				writePostDict(newPost.getTermId(), combBlock.position(), newPost.getList().size());
