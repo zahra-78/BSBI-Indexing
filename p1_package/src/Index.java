@@ -1,5 +1,12 @@
-
-
+/**
+ * Index.java
+ * Project 1
+ * YouGle: Your First Search Engine
+ * Created by 
+ * 1. Peerachai  Banyongrakkul  Sec.1  5988070
+ * 2. Sakunrat  Nunthavanich  Sec.1  5988095
+ * 3. Boonyada  Lojanarungsiri  Sec.1  5988153
+ */
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -152,13 +159,13 @@ public class Index {
 		/* For each block */
 		for (File block : dirlist) {
 			File blockFile = new File(outputDirname, block.getName());
-			//System.out.println("Processing block "+block.getName());
+			System.out.println("Processing block "+block.getName());
 			blockQueue.add(blockFile);
 
 			File blockDir = new File(dataDirname, block.getName());
 			File[] filelist = blockDir.listFiles();
 			
-			//add
+			//create new posList after changing block
 			List<PostingList> postList = new ArrayList<PostingList>();
 			
 			/* For each file */
@@ -247,7 +254,6 @@ public class Index {
 				{
 					if(postList.get(j).getTermId() < postList.get(j-1).getTermId())
 					{
-						//System.out.println("SWAP");
 						Collections.swap(postList, j, j-1);
 					}
 				}
@@ -260,7 +266,7 @@ public class Index {
 		}
 
 		/* Required: output total number of files. */
-		//System.out.println("Total Files Indexed: "+totalFileCount);
+		System.out.println("Total Files Indexed: "+totalFileCount);
 
 		/* Merge blocks */
 		while (true) {
@@ -362,7 +368,13 @@ public class Index {
 		}
 	}
 	
-	
+	/**
+	 * 
+	 * @param f1
+	 * @param f2
+	 * @param combFile
+	 * @throws IOException
+	 */
 	private static void mergeBlock(RandomAccessFile f1, RandomAccessFile f2, RandomAccessFile combFile) throws IOException
 	{
 		FileChannel block1 = f1.getChannel();
@@ -389,7 +401,6 @@ public class Index {
 	        				writePostDict(post1.getTermId(), combBlock.position(), post1.getList().size());
 	        			}
 	                    writePosting(combBlock, post1);
-	                    //System.out.println("Write " + post1.getTermId() + " " + post1.getList().size() + " " + post1.getList().toString());
 	                    post1 = index.readPosting(block1);
 					}
 					else
@@ -406,7 +417,6 @@ public class Index {
 	        				writePostDict(post2.getTermId(), combBlock.position(), post2.getList().size());
 	        			}
 	                    writePosting(combBlock, post2);
-	                   //System.out.println("Write " + post2.getTermId() + " " + post2.getList().size() + " " + post2.getList().toString());
 	                    post2 = index.readPosting(block2);
                 	}
                 	else
@@ -416,9 +426,7 @@ public class Index {
                 }
                 if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
                 {
-                	//System.out.println("MERGE POSTING LIST (" + post1.getTermId() + " " + post1.getList().toString() + ", " + post2.getTermId() + " " + post2.getList().toString() + ")");
                     newPost = mergePosting(post1, post2);
-                    //System.out.println("Write " + newPost.getTermId() + " " + newPost.getList().size() + " " + newPost.getList().toString());
         			if(blockQueue.size() <= 0)
         			{
         				writePostDict(newPost.getTermId(), combBlock.position(), newPost.getList().size());
@@ -429,7 +437,12 @@ public class Index {
         } 
 	}
 	
-    
+    /**
+     * 
+     * @param termId
+     * @param pos
+     * @param docFreq
+     */
     private static void writePostDict(int termId, long pos, int docFreq)
     {
 		Pair<Long,Integer> pairDoc;

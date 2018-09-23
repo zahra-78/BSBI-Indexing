@@ -1,4 +1,12 @@
-
+/**
+ * BasicIndex.java
+ * Project 1
+ * YouGle: Your First Search Engine
+ * Created by 
+ * 1. Peerachai  Banyongrakkul  Sec.1  5988070
+ * 2. Sakunrat  Nunthavanich  Sec.1  5988095
+ * 3. Boonyada  Lojanarungsiri  Sec.1  5988153
+ */
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -53,7 +61,6 @@ public class BasicIndex implements BaseIndex {
 		}
 		
 		PostingList postList = new PostingList(termID,eachPostList);
-		//System.out.println(termID+" "+docFreq+" "+eachPostList.toString());
 		return postList;
 	}
 
