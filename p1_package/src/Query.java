@@ -132,14 +132,18 @@ public class Query {
 		 */
 		FileChannel g;
 		g = indexFile.getChannel();
+		//pos List is to keep postinglist of the queries that contains in the term
 		List<PostingList> pos = new ArrayList<PostingList>();
+		//listDocID List is to keep the docId of the queries that contains in term
 		List<Integer> listDocID = new LinkedList<Integer>();
 		int check = 0;
+		//check whether the query have whitespace(" ") or not, if yes
+		//then, split the whitespace(" ") and check the split query whether it contains in the terms or not
+		//if yes, then add its postinglist to the pos List
 		if(query.contains(" "))
 		{
 			String newTerm[];
 			newTerm = query.split(" ");
-			
 			for(int i = 0 ; i < newTerm.length ; i++)
 			{
 				for(String term : termDict.keySet()) 
@@ -156,6 +160,8 @@ public class Query {
 			{
 				return null;
 			}
+			//if pos List have more than 1 postinglist(the query contains whitespace(" "))
+			//intersect its postinglists and add into pos List
 			while(pos.size() > 1)
 			{
 				int i = 0;
