@@ -269,6 +269,8 @@ public class Index {
 		System.out.println("Total Files Indexed: "+totalFileCount);
 
 		/* Merge blocks */
+		//loop check whether the block exists or not, if yes
+		//then, remove the existing blocks
 		while (true) {
 			if (blockQueue.size() <= 1)
 				break;
@@ -281,9 +283,11 @@ public class Index {
 				System.err.println("Create new block failure.");
 				return -1;
 			}
-
+//the file that stores the first block
 			RandomAccessFile bf1 = new RandomAccessFile(b1, "r");
+			//the file that stores the second block
 			RandomAccessFile bf2 = new RandomAccessFile(b2, "r");
+			//the file that stores the output of the first block merges with the second block
 			RandomAccessFile mf = new RandomAccessFile(combfile, "rw");
 			 
 			/*
@@ -490,7 +494,6 @@ public class Index {
             }
         }
         
-        //System.out.println(newDocList.toString());
     	termID = p1.getTermId();
         PostingList newPostList = new PostingList(termID,newDocList);
         return newPostList;
