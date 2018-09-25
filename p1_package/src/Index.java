@@ -128,6 +128,9 @@ public class Index {
 		/*	TODO: delete all the files/sub folder under outdir
 		 * 
 		 */
+		//check whether the file is a directory or not, if yes
+		//then, if the directory contains files or sub-directory, use the method "deleteSub"
+		//the method "deleteSub" is created to delete all files and sub-directory that contain in the file
 		if(outdir.isDirectory())
 		{
 			if(outdir.list().length>0)
@@ -188,7 +191,10 @@ public class Index {
 						 *       For each term, build up a list of
 						 *       documents in which the term occurs
 						 */
+						//"eachPost" List is to keep the docID of each token
 						List<Integer> eachPost = new ArrayList<Integer>();
+						//check whether the first term is stored in termDict or not, if yes
+						//then, store the token and its docID to "eachPos" List with creating its postinglist
 						if(termDict.isEmpty())
 						{
 							termDict.put(token,wordIdCounter);
@@ -197,8 +203,10 @@ public class Index {
 							postList.add(post);
 							wordIdCounter++;
 						}
+						//if the new token isn't the first term, then check whether it contains in termDict or not
 						else
 						{
+							//if the new token doesn't contain in termDict, add it into termDict, else do nothing
 							if(!termDict.containsKey(token))
 							{
 								termDict.put(token, wordIdCounter);
@@ -206,6 +214,8 @@ public class Index {
 							}
 							int tid = termDict.get(token);
 							int index = 0;
+							//looping for checking whether the termID is contained in posting list or not, if yes
+							//then, keep its index and keep a boolean "isExist" true for adding new docID in the term's posting list
 							for(int a = 0 ; a < postList.size() ; a++)
 							{
 								if(postList.get(a).getTermId()==tid)
@@ -215,6 +225,8 @@ public class Index {
 									break;
 								}
 							}
+							//if "isExist" is true then, check if the termID at position index have this docID in its docID list or not, if yes,
+							//then, do nothing else, add this docID into its doc list
 							if(isExist == true)
 							{
 								if(!postList.get(index).getList().contains(docId))
@@ -223,6 +235,7 @@ public class Index {
 								}
 								isExist = false;
 							}
+							//but if the term doesn't contain in the posting list, add docID into "eachPos" and create a new posting list
 							else
 							{
 								eachPost.add(docId);
@@ -247,7 +260,7 @@ public class Index {
 			 * TODO: Your code here
 			 *       Write all posting lists for all terms to file (bfc) 
 			 */
-			// sort
+			// sort the posting lists ordered by termID
 			for(int i = 1 ; i < postList.size() ; i++)
 			{
 				for(int j = i ; j > 0; j--)
@@ -258,6 +271,7 @@ public class Index {
 					}
 				}
 			}
+			//write all posting lists into a file
 			for(int g = 0 ; g < postList.size() ; g++)
 			{
 				writePosting(inChannel, postList.get(g));
@@ -299,6 +313,7 @@ public class Index {
 			 */
 			System.out.println("Merge Block ("+b1.getName() + ", " + b2.getName() + ")");
 			
+			//method "mergeBlock" is to merge the file 'bf1'(as block 0) and 'bf2'(as block 1) and write the result into 'mf'
 			mergeBlock( bf1,  bf2,  mf);
 			
 			bf1.close();
@@ -343,6 +358,8 @@ public class Index {
 	 * @param file
 	 * @throws IOException
 	 */
+	
+	//the method "deleteSub" is to delete all files and sub-directory than contain in File 'file'
 	private static void deleteSub(File file) throws IOException
 	{
 		System.out.println("Delete all files and sub-folders in " + file.getName());
@@ -379,6 +396,7 @@ public class Index {
 	 * @param combFile
 	 * @throws IOException
 	 */
+	
 	private static void mergeBlock(RandomAccessFile f1, RandomAccessFile f2, RandomAccessFile combFile) throws IOException
 	{
 		FileChannel block1 = f1.getChannel();
