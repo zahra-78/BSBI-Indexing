@@ -50,6 +50,8 @@ public class Query {
 		 * TODO: Your code here
 		 */
 		PostingList posList;
+		//check whether the parameter 'termId' exists in the list "posDict", which stores term id or not,
+		//if 'termId' contains in "posDict", then return its posting list
 		if(posDict.containsKey(termId))
 		{
 			posList = index.readPosting(fc.position(posDict.get(termId)));
