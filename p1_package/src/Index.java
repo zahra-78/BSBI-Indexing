@@ -363,6 +363,8 @@ public class Index {
 	private static void deleteSub(File file) throws IOException
 	{
 		System.out.println("Delete all files and sub-folders in " + file.getName());
+		//looping for checking each file in the file list whether it is directory or not
+		//if yes, use the method "deleteSub" to delete all files and sub-folders that contain in each file
 		for (File sub : file.listFiles()) 
 		{
 			 
@@ -396,24 +398,25 @@ public class Index {
 	 * @param combFile
 	 * @throws IOException
 	 */
-	
+	//the method "mergeBlock" is to merge 2 PostingList(converted from RandomAccessFile) and write in the new file
 	private static void mergeBlock(RandomAccessFile f1, RandomAccessFile f2, RandomAccessFile combFile) throws IOException
 	{
 		FileChannel block1 = f1.getChannel();
 		FileChannel block2 = f2.getChannel();
 		FileChannel combBlock = combFile.getChannel();
-		
+		//looping until PostingList post1 and post2 are empty, and for writting all PostingList into corpus.index file
 		while(true)
 		{
 			PostingList post1 = index.readPosting(block1);
 			PostingList post2 = index.readPosting(block2);
-        	PostingList newPost = null;
+        		PostingList newPost = null;
 			if(post1 == null && post2 == null)
 			{
 				break;
 			}
 			else
 			{
+				//looping for writting PostingList post1 into a file and index.corpus if post1 ID is lower than post2 ID
 				while (post1 != null) 
 				{
 					if(post2 == null || post1.getTermId() < post2.getTermId())
@@ -430,6 +433,7 @@ public class Index {
 						break;
 					}
                 } 
+				//looping for writting PostingList post2 into a file and index.corpus if post2 ID is lower than post1 ID
                 while (post2 != null) 
                 {
                 	if(post1 == null || post2.getTermId() < post1.getTermId())
@@ -446,6 +450,7 @@ public class Index {
                 		break;
                 	}
                 }
+				//write one of the post1 or the post2 into a file if its ID is equal
                 if (post1 != null && post2 != null && post1.getTermId() == post2.getTermId()) 
                 {
                     newPost = mergePosting(post1, post2);
@@ -465,13 +470,14 @@ public class Index {
      * @param pos
      * @param docFreq
      */
+	//the method "writePosDict" is to convert data(termId, pos, docFreq) into PostingList
     private static void writePostDict(int termId, long pos, int docFreq)
     {
 		Pair<Long,Integer> pairDoc;
 		pairDoc = new Pair<>(pos, docFreq);
 		postingDict.put(termId,pairDoc);
     }
-	
+	//the method "mergePosting" is created for merge 2 PostingLists then write the result into a file
     private static PostingList mergePosting(PostingList p1, PostingList p2) 
     {
         int termID;
@@ -481,6 +487,7 @@ public class Index {
         Integer docID1 = popNextOrNull(docList1);
         Integer docID2 = popNextOrNull(docList2);
         
+	//looping until both docIDs is empty
         while (docID1 != null || docID2 != null) 
         {
             if (docID1 <= docID2)
